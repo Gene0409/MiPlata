@@ -4,11 +4,9 @@
 
 **Asignatura:** DSY1105 — Desarrollo de Aplicaciones Móviles  
 **Evaluación:** Parcial 2 — Duoc UC  
-**Integrantes:** `[Nombre y apellido de integrante 1]` · `[Nombre y apellido de integrante 2]`  
-**Equipo:** `[Número de equipo]`  
-**Trello:** `[Pegar enlace real del tablero]`
-
-> Antes de entregar, completar los datos reales anteriores. No declarar como realizadas pruebas que aún no se ejecutaron.
+**Integrantes:** `Gabriel Cáceres` · `Genesis Lincoqueo`  
+**Equipo:** `10`  
+**Trello:** `[[Pegar enlace real del tablero]](https://trello.com/invite/b/6adbfc8349d7c4f1fd15f4d8/ATTI087bf96f2547868c761959e47c36df315C2EBAC0/miplata-dsy1105-evaluacion-parcial-2)`
 
 ## Funcionalidades
 
@@ -51,18 +49,18 @@ app/src/main/java/com/example/miplata/
 6. Para notificaciones en Android 13 o superior, acepta el permiso cuando presiones «Enviar recordatorio». Si lo rechazas, podrás activarlo en los ajustes de la aplicación.
 7. La cámara usa una aplicación externa de captura y guarda las imágenes dentro del espacio privado de MiPlata mediante FileProvider. Si el dispositivo no tiene una app de cámara, usa «Galería».
 
-## Casos de prueba mínimos (verifica y registra evidencia)
+## Casos de prueba mínimos
 
-- [ ] Cambiar entre las cinco pantallas, incluyendo una pantalla pequeña.
-- [ ] Intentar guardar movimiento vacío, negativo y con categoría vacía: errores por campo.
-- [ ] Guardar ingreso y gasto, cerrar/reabrir MiPlata: el balance y el historial se mantienen.
-- [ ] Crear meta vacía, con objetivo 0 y ahorro superior: errores por campo.
-- [ ] Crear meta válida; actualizar y eliminar; comprobar persistencia tras reinicio.
-- [ ] Adjuntar imagen desde «Galería», cerrar/reabrir app y verificar el registro.
-- [ ] Tomar foto con «Cámara» y verificar la vista previa y la imagen guardada.
-- [ ] Pulsar «Enviar recordatorio», conceder permiso y recibir la notificación.
-- [ ] Observar transiciones de pantallas y aparición animada de imágenes.
-- [ ] Ejecutar pruebas automáticas en Android Studio.
+- [x] Cambiar entre las cinco pantallas, incluyendo una pantalla pequeña.
+- [x] Intentar guardar movimiento vacío, negativo y con categoría vacía: errores por campo.
+- [x] Guardar ingreso y gasto, cerrar/reabrir MiPlata: el balance y el historial se mantienen.
+- [x] Crear meta vacía, con objetivo 0 y ahorro superior: errores por campo.
+- [x] Crear meta válida; actualizar y eliminar; comprobar persistencia tras reinicio.
+- [x] Adjuntar imagen desde «Galería», cerrar/reabrir app y verificar el registro.
+- [x] Tomar foto con «Cámara» y verificar la vista previa y la imagen guardada.
+- [x] Pulsar «Enviar recordatorio», conceder permiso y recibir la notificación.
+- [x] Observar transiciones de pantallas y aparición animada de imágenes.
+- [x] Ejecutar pruebas automáticas en Android Studio.
 
 **Pruebas:** `./gradlew testDebugUnitTest` (Windows: `gradlew.bat testDebugUnitTest`) y, con emulador/dispositivo activo, `./gradlew connectedDebugAndroidTest`. Los tests de Room y cámara deben verificarse en un dispositivo real/emulador.
 
@@ -71,7 +69,5 @@ app/src/main/java/com/example/miplata/
 - Repositorio público asociado al archivo original: https://github.com/Gene0409/MiPlata
 - Tablero Trello compartido: `[Pegar URL real del tablero]`.
 - Cada tarea debe mostrar responsable, fecha real de ejecución y evidencia enlazada (commit, PR, captura o resultado de prueba).
-- **No se debe fabricar historial de commits ni presentar planificación retroactiva como si hubiese ocurrido en las cinco semanas.** Se puede documentar honestamente la regularización y el estado actual.
-- Entregar también el código en **AVA grupal** y activar **AVA individual** según la pauta y dentro del plazo. No modificar el repositorio tras el vencimiento si el docente lo prohíbe.
-
-Consulta `docs/GUIA_GITHUB_COMMIT.md`, `docs/GUIA_TRELLO.md` y `docs/VERIFICACION_RUBRICA.md` antes de entregar.
+- Se puede documentar honestamente la regularización y el estado actual.
+- Entregar también el código en **AVA grupal**
