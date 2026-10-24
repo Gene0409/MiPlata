@@ -6,7 +6,7 @@
 **Evaluación:** Parcial 2 — Duoc UC  
 **Integrantes:** `Gabriel Cáceres` · `Genesis Lincoqueo`  
 **Equipo:** `10`  
-**Trello:** `(https://trello.com/invite/b/6adbfc8349d7c4f1fd15f4d8/ATTI087bf96f2547868c761959e47c36df315C2EBAC0/miplata-dsy1105-evaluacion-parcial-2)`
+**Trello:** `https://trello.com/b/A1cUjBgf`
 
 ## Funcionalidades
 
