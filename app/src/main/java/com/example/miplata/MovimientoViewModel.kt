@@ -142,9 +142,7 @@ class MovimientoViewModel(application: Application) : AndroidViewModel(applicati
             return
         }
 
-        val monto = actual.monto.trim()
-            .replace(",", ".")
-            .toDoubleOrNull()
+        val monto = Validaciones.leerMontoCLP(actual.monto)
 
         // Protección adicional antes de crear el registro.
         if (monto == null || !monto.isFinite() || monto <= 0) {

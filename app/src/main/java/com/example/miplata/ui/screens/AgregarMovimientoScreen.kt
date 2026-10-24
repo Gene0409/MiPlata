@@ -1,6 +1,17 @@
 package com.example.miplata.ui.screens
 
 import android.net.Uri
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.core.content.FileProvider
+import java.io.File
+import java.util.UUID
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AttachMoney
+import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material3.Icon
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -51,9 +62,9 @@ fun AgregarMovimientoScreen(
     val guardando by viewModel.guardando.collectAsState()
     val context = LocalContext.current
 
-    var imagenSeleccionada by remember {
-        mutableStateOf<Uri?>(null)
-    }
+    var imagenSeleccionadaTexto by rememberSaveable { mutableStateOf<String?>(null) }
+    val imagenSeleccionada = imagenSeleccionadaTexto?.let(Uri::parse)
+    var uriCamaraPendiente by rememberSaveable { mutableStateOf<String?>(null) }
 
     var errorImagen by remember {
         mutableStateOf<String?>(null)
@@ -76,12 +87,39 @@ fun AgregarMovimientoScreen(
                     uri,
                     android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
-                imagenSeleccionada = uri
+                imagenSeleccionadaTexto = uri.toString()
                 errorImagen = null
-            } catch (e: SecurityException) {
-                imagenSeleccionada = uri
-                errorImagen = "No se pudo guardar el permiso de la imagen."
+            } catch (_: SecurityException) {
+                // Si no se conserva el permiso, no guardamos una URI que fallará al reiniciar.
+                imagenSeleccionadaTexto = null
+                errorImagen = "No se pudo conservar el permiso. Prueba con otra imagen."
             }
+        }
+    }
+
+    val camara = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { guardada ->
+        if (guardada) {
+            imagenSeleccionadaTexto = uriCamaraPendiente
+            errorImagen = null
+        } else {
+            errorImagen = "Se canceló la fotografía. Puedes volver a intentarlo."
+        }
+        uriCamaraPendiente = null
+    }
+
+    fun abrirCamara() {
+        try {
+            val directorio = File(context.filesDir, "imagenes").apply { mkdirs() }
+            val archivo = File(directorio, "movimiento_${UUID.randomUUID()}.jpg")
+            val uri = FileProvider.getUriForFile(
+                context, "${context.packageName}.fileprovider", archivo
+            )
+            uriCamaraPendiente = uri.toString()
+            camara.launch(uri)
+        } catch (_: Exception) {
+            errorImagen = "No se pudo abrir la cámara en este dispositivo."
         }
     }
 
@@ -151,6 +189,7 @@ fun AgregarMovimientoScreen(
             value = estado.monto,
             onValueChange = viewModel::cambiarMonto,
             label = { Text("Monto en pesos chilenos") },
+            leadingIcon = { Icon(Icons.Outlined.AttachMoney, contentDescription = null) },
             placeholder = { Text("Ej.: 15000") },
             modifier = Modifier.fillMaxWidth(),
             isError = estado.errorMonto != null,
@@ -166,6 +205,7 @@ fun AgregarMovimientoScreen(
             value = estado.categoria,
             onValueChange = viewModel::cambiarCategoria,
             label = { Text("Categoría") },
+            leadingIcon = { Icon(Icons.Outlined.Category, contentDescription = null) },
             placeholder = {
                 Text("Ej.: Alimentación, sueldo, transporte")
             },
@@ -181,6 +221,7 @@ fun AgregarMovimientoScreen(
             value = estado.descripcion,
             onValueChange = viewModel::cambiarDescripcion,
             label = { Text("Descripción (opcional)") },
+            leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
             placeholder = {
                 Text("¿En qué consiste este movimiento?")
             },
@@ -194,20 +235,26 @@ fun AgregarMovimientoScreen(
             style = MaterialTheme.typography.titleMedium
         )
 
-        OutlinedButton(
-            onClick = {
-                selectorImagen.launch(arrayOf("image/*"))
-            },
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(
-                if (imagenSeleccionada == null) {
-                    "＋ Seleccionar imagen"
-                } else {
-                    "✓ Cambiar imagen"
-                }
-            )
+            OutlinedButton(
+                onClick = { selectorImagen.launch(arrayOf("image/*")) },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
+                Text(" Galería")
+            }
+            OutlinedButton(
+                onClick = ::abrirCamara,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
+                Text(" Cámara")
+            }
         }
 
         errorImagen?.let {
@@ -246,7 +293,7 @@ fun AgregarMovimientoScreen(
 
                         OutlinedButton(
                             onClick = {
-                                imagenSeleccionada = null
+                                imagenSeleccionadaTexto = null
                                 errorImagen = null
                             },
                             modifier = Modifier.fillMaxWidth()

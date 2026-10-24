@@ -1,5 +1,15 @@
 package com.example.miplata.ui.screens
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.example.miplata.nativos.Notificaciones
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +44,30 @@ fun InicioScreen(
     onVerMovimientos: () -> Unit
 ) {
     val movimientos by viewModel.movimientos.collectAsState()
+    val contexto = LocalContext.current
+    var estadoAviso by remember { mutableStateOf<String?>(null) }
+    val solicitarPermiso = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        estadoAviso = if (concedido && Notificaciones.mostrarRecordatorio(contexto)) {
+            "Recordatorio enviado. Revisa las notificaciones del dispositivo."
+        } else {
+            "Permiso de notificaciones no concedido. Puedes habilitarlo en Ajustes."
+        }
+    }
+    fun enviarAviso() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !Notificaciones.tienePermiso(contexto)
+        ) {
+            solicitarPermiso.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            estadoAviso = if (Notificaciones.mostrarRecordatorio(contexto)) {
+                "Recordatorio enviado. Revisa las notificaciones del dispositivo."
+            } else {
+                "No se pudo enviar el aviso. Comprueba los permisos del dispositivo."
+            }
+        }
+    }
 
     val ingresos = movimientos
         .filter { it.tipo == TipoMovimiento.INGRESO }
@@ -187,6 +221,28 @@ fun InicioScreen(
                 Text(
                     text = "Registra tus gastos pequeños. Sumados al final del mes, pueden representar una parte importante de tu presupuesto."
                 )
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("🔔 Recordatorio financiero", style = MaterialTheme.typography.titleMedium)
+                Text("Prueba un aviso del dispositivo para recordar revisar tus finanzas.")
+                OutlinedButton(onClick = ::enviarAviso) {
+                    Text("Enviar recordatorio")
+                }
+                estadoAviso?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
 

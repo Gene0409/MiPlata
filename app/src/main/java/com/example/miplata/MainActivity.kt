@@ -1,4 +1,5 @@
 
+
 package com.example.miplata
 
 import android.os.Bundle
@@ -25,9 +26,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.miplata.ui.screens.AgregarMovimientoScreen
@@ -71,7 +73,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MiPlataApp() {
-    var pantalla by remember { mutableIntStateOf(0) }
+    var pantalla by rememberSaveable { mutableIntStateOf(0) }
     val viewModel: MovimientoViewModel = viewModel()
 
     val opciones = listOf(
@@ -99,7 +101,9 @@ fun MiPlataApp() {
                             Text(text = iconos[index])
                         },
                         label = {
-                            Text(text = titulo, maxLines = 1)
+                            Text(text = titulo, maxLines = 1,
+                                style = MaterialTheme.typography.labelSmall,
+                                overflow = TextOverflow.Ellipsis)
                         }
                     )
                 }
