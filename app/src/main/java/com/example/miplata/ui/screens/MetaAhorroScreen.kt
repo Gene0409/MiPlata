@@ -18,6 +18,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.Savings
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -42,10 +47,10 @@ fun MetaAhorroScreen(
 ) {
     val metas by viewModel.metas.collectAsState()
 
-    var nombre by remember { mutableStateOf("") }
-    var objetivo by remember { mutableStateOf("") }
-    var ahorro by remember { mutableStateOf("0") }
-    var error by remember { mutableStateOf<String?>(null) }
+    val formulario by viewModel.formulario.collectAsState()
+    val guardando by viewModel.guardando.collectAsState()
+    val mensaje by viewModel.mensaje.collectAsState()
+    val errorActualizacion by viewModel.errorActualizacion.collectAsState()
 
     var metaParaEliminar by remember {
         mutableStateOf<MetaAhorroEntity?>(null)
@@ -56,7 +61,6 @@ fun MetaAhorroScreen(
     }
 
     var nuevoAhorro by remember { mutableStateOf("") }
-    var errorActualizacion by remember { mutableStateOf<String?>(null) }
 
     val moneda = remember {
         NumberFormat.getCurrencyInstance(Locale("es", "CL"))
@@ -107,101 +111,56 @@ fun MetaAhorroScreen(
         )
 
         OutlinedTextField(
-            value = nombre,
-            onValueChange = {
-                nombre = it
-                error = null
-            },
+            value = formulario.nombre,
+            onValueChange = viewModel::cambiarNombre,
             label = { Text("¿Para qué estás ahorrando?") },
             placeholder = { Text("Ej.: Viaje, notebook, emergencia") },
+            leadingIcon = { Icon(Icons.Outlined.Flag, contentDescription = null) },
+            isError = formulario.errorNombre != null,
+            supportingText = { formulario.errorNombre?.let { Text(it) } },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
 
         OutlinedTextField(
-            value = objetivo,
-            onValueChange = {
-                objetivo = it
-                error = null
-            },
+            value = formulario.objetivo,
+            onValueChange = viewModel::cambiarObjetivo,
             label = { Text("Monto objetivo (CLP)") },
             placeholder = { Text("Ej.: 300000") },
+            leadingIcon = { Icon(Icons.Outlined.Savings, contentDescription = null) },
+            isError = formulario.errorObjetivo != null,
+            supportingText = { formulario.errorObjetivo?.let { Text(it) } },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
 
         OutlinedTextField(
-            value = ahorro,
-            onValueChange = {
-                ahorro = it
-                error = null
-            },
+            value = formulario.ahorro,
+            onValueChange = viewModel::cambiarAhorro,
             label = { Text("¿Cuánto tienes ahorrado? (CLP)") },
             placeholder = { Text("Ej.: 50000") },
+            leadingIcon = { Icon(Icons.Outlined.Savings, contentDescription = null) },
+            isError = formulario.errorAhorro != null,
+            supportingText = { formulario.errorAhorro?.let { Text(it) } },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
 
-        if (error != null) {
+        mensaje?.let {
             Text(
-                text = error.orEmpty(),
-                color = MaterialTheme.colorScheme.error,
+                text = it,
+                color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
 
         Button(
-            onClick = {
-                val montoObjetivo = objetivo.trim()
-                    .replace(" ", "")
-                    .replace(".", "")
-                    .replace(",", ".")
-                    .toDoubleOrNull()
-
-                val montoAhorrado = ahorro.trim()
-                    .replace(" ", "")
-                    .replace(".", "")
-                    .replace(",", ".")
-                    .toDoubleOrNull()
-
-                error = when {
-                    nombre.isBlank() ->
-                        "Escribe un nombre para tu meta."
-
-                    montoObjetivo == null ||
-                            !montoObjetivo.isFinite() ||
-                            montoObjetivo <= 0 ->
-                        "El objetivo debe ser mayor que cero."
-
-                    montoAhorrado == null ||
-                            !montoAhorrado.isFinite() ||
-                            montoAhorrado < 0 ->
-                        "El ahorro debe ser cero o mayor."
-
-                    montoAhorrado > montoObjetivo ->
-                        "El ahorro no puede superar el objetivo."
-
-                    else -> null
-                }
-
-                if (error == null) {
-                    viewModel.crearMeta(
-                        nombre = nombre.trim(),
-                        montoObjetivo = montoObjetivo!!,
-                        montoAhorrado = montoAhorrado!!
-                    )
-
-                    nombre = ""
-                    objetivo = ""
-                    ahorro = "0"
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp),
+            onClick = viewModel::crearMeta,
+            enabled = !guardando,
+            modifier = Modifier.fillMaxWidth().height(54.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text("Guardar meta")
+            Text(if (guardando) "Guardando..." else "Guardar meta")
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -298,7 +257,7 @@ fun MetaAhorroScreen(
                                 onClick = {
                                     metaParaActualizar = meta
                                     nuevoAhorro = meta.montoAhorrado.toLong().toString()
-                                    errorActualizacion = null
+                                    viewModel.limpiarErrorActualizacion()
                                 },
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -340,11 +299,12 @@ fun MetaAhorroScreen(
                         value = nuevoAhorro,
                         onValueChange = {
                             nuevoAhorro = it
-                            errorActualizacion = null
+                            viewModel.limpiarErrorActualizacion()
                         },
                         label = { Text("Ahorro actual (CLP)") },
                         placeholder = { Text("Ej.: 70000") },
                         singleLine = true,
+                        leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
                         isError = errorActualizacion != null
                     )
 
@@ -360,29 +320,7 @@ fun MetaAhorroScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val monto = nuevoAhorro.trim()
-                            .replace(" ", "")
-                            .replace(".", "")
-                            .replace(",", ".")
-                            .toDoubleOrNull()
-
-                        errorActualizacion = when {
-                            monto == null || !monto.isFinite() ->
-                                "Ingresa un monto válido."
-
-                            monto < 0 ->
-                                "El ahorro no puede ser negativo."
-
-                            monto > meta.montoObjetivo ->
-                                "No puede superar el objetivo."
-
-                            else -> null
-                        }
-
-                        if (errorActualizacion == null) {
-                            viewModel.actualizarMeta(
-                                meta.copy(montoAhorrado = monto!!)
-                            )
+                        if (viewModel.actualizarMeta(meta, nuevoAhorro)) {
                             metaParaActualizar = null
                         }
                     }
